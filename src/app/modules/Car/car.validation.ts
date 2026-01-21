@@ -1,0 +1,81 @@
+import { optional, z } from "zod";
+
+const PriceSchema = z.object({
+  rentalTime: z.number().optional(),
+  price: z.number().min(0).optional(),
+  kilometerPerHour: z.string().optional(),
+});
+
+const createCarValidationSchema = z.object({
+  body: z.object({
+    category: z.string().nonempty(),
+    // brandId: z.string().nonempty(),
+    brand: z.string().nonempty(),
+    model: z.string().nonempty(),
+    year: z.number().int().positive(),
+    transmission: z.enum(["MANUAL", "AUTOMATIC"]),
+    advertisingType: z.string().optional(),
+    color: z.string().nonempty(),
+    kmh: z.number().positive(),
+    engine: z.string().nonempty(),
+    maxSpeed: z.number().int().positive(),
+    horsePower: z.number().int().positive(),
+    seats: z.number().int().positive().min(1),
+    fuelType: z.enum(["IBRIDO", "ELETTRICO", "DIESEL", "BENZINA"]),
+    description: z.string().optional(),
+    price: z.array(PriceSchema).optional(),
+    accessories: z.array(z.string()).optional(),
+    damageDeductible: z.string().optional(),
+    deposite: z.number().min(0),
+    depositePolicy: z.string().optional(),
+    fuelPolicy: z.string().optional(),
+    mileagePolicy: z.string().optional(),
+    damagePolicy: z.string().optional(),
+    advertiserName: z.string().nonempty(),
+    phoneNumber: z.string().nonempty(),
+    latitude: z.number(),
+    longitude: z.number(),
+    email: z.string().email().optional(),
+    whatsapp: z.string().optional(),
+    location: z.string().optional(),
+    // authenticationFile: z.string().optional(),
+    carStatus: z.enum(["SUSPEND", "ACTIVE"]).default("ACTIVE"),
+  }),
+});
+
+const updateCarValidationSchema = z.object({
+  body: z.object({
+    category: z.string().nonempty().optional(),
+    brandId: z.string().nonempty().optional(),
+    model: z.string().nonempty().optional(),
+    year: z.number().int().positive().optional(),
+    transmission: z.enum(["MANUAL", "AUTOMATIC"]).optional(),
+    advertisingType: z.string().optional(),
+    color: z.string().nonempty().optional(),
+    kmh: z.number().positive().optional(),
+    engine: z.string().nonempty().optional(),
+    maxSpeed: z.number().int().positive().optional(),
+    horsePower: z.number().int().positive().optional(),
+    seats: z.number().int().positive().min(1).optional(),
+    fuelType: z.enum(["IBRIDO", "ELETTRICO", "DIESEL", "BENZINA"]).optional(),
+    description: z.string().optional(),
+    price: z.array(PriceSchema).optional(),
+    accessories: z.array(z.string()).optional(),
+    depositePolicy: z.string().optional(),
+    fuelPolicy: z.string().optional(),
+    mileagePolicy: z.string().optional(),
+    damagePolicy: z.string().optional(),
+    advertiserName: z.string().nonempty().optional(),
+    phoneNumber: z.string().nonempty().optional(),
+    email: z.string().email().optional(),
+    whatsapp: z.string().optional(),
+    location: z.string().optional(),
+    authenticationFile: z.string().optional(),
+    carStatus: z.enum(["SUSPEND", "ACTIVE"]).default("ACTIVE").optional(),
+  }),
+});
+
+export const CarValidation = {
+  createCarValidationSchema,
+  updateCarValidationSchema,
+};

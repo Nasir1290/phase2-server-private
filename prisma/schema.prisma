@@ -1,0 +1,300 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String            @id @default(auto()) @map("_id") @db.ObjectId
+  firstName            String
+  profilePic           String?
+  lastName             String?
+  sureName             String?
+  phoneNumber          String
+  website              String?
+  email                String            @unique
+  password             String
+  isVerified           Boolean           @default(false)
+  otp                  Int?
+  otpExpiry            DateTime?
+  isDeleted            Boolean           @default(false)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  cantone              String?
+  indirizzo            String?
+  cap                  String?
+  role                 UserRole
+  userStatus           UserStatus        @default(ACTIVE)
+  Car                  Car[]
+  //new fields
+  subscriptionType     SubscriptionType  @default(STANDARD)
+  subscriptionId       String?           @db.ObjectId
+  inCimaTimes          Int               @default(0)
+  inHomePageDays       Int               @default(0)
+  inRisaltoDays        Int               @default(0)
+  purchaseHistories    PurchaseHistory[]
+  // one user will have one billing data
+  billingDataId        String?           @db.ObjectId
+  realtimeNotification Boolean           @default(false)
+  notificationSOund    Boolean           @default(false)
+}
+
+model BillingData {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  sureName    String
+  email       String
+  phoneNumber String
+  companyName String?
+  location    String
+  createdAt   DateTime @default(now()) @map("createdAt") @db.Timestamp
+  updatedAt   DateTime @updatedAt @map("updatedAt") @db.Timestamp
+  userId      String   @db.ObjectId
+}
+
+model PurchaseHistory {
+  id               String                @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String                @db.ObjectId
+  user             User                  @relation(fields: [userId], references: [id])
+  promotionId      String                @db.ObjectId
+  promotion        Promotion             @relation(fields: [promotionId], references: [id])
+  stripeCheckoutId String
+  totalCents       Int
+  status           PurchaseHistoryStatus @default(PENDING)
+  quantity         Int
+  createdAt        DateTime              @default(now()) @map("createdAt") @db.Timestamp
+  updatedAt        DateTime              @updatedAt @map("updatedAt") @db.Timestamp
+}
+
+model Promotion {
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  type            PromotionType     @default(IN_CIMA)
+  name            String
+  priceCents      Int
+  stripePriceId   String
+  isBundle        Boolean           @default(false)
+  purchaseHistory PurchaseHistory[]
+}
+
+model Car {
+  id                    String           @id @default(auto()) @map("_id") @db.ObjectId
+  model                 String
+  ownerId               String           @db.ObjectId
+  year                  Int
+  color                 String
+  kmh                   Float
+  brand                 String
+  engine                String
+  maxSpeed              Int
+  horsePower            Int
+  seats                 Int
+  deposite              Int
+  description           String
+  mainImage             String
+  otherImages           String[]
+  video                 String?
+  accessories           String[]
+  depositePolicy        String
+  fuelPolicy            String
+  mileagePolicy         String
+  damagePolicy          String
+  advertiserName        String
+  phoneNumber           String
+  email                 String
+  whatsapp              String
+  location              String           @default("")
+  latitude              Float?
+  longitude             Float?
+  locationType          String           @default("POINT")
+  authenticationFile    String
+  viewCount             Int              @default(0)
+  createdAt             DateTime         @default(now()) @map("createdAt") @db.Timestamp
+  updatedAt             DateTime         @updatedAt @map("updatedAt") @db.Timestamp
+  category              String
+  // brand              String
+  acceptanceStatus      AcceptanceStatus @default(PENDING)
+  carType               CarType          @default(NORMAL)
+  carStatus             CarStatus        @default(ACTIVE)
+  transmission          Transmission
+  advertisingType       AdvertisingType?
+  fuelType              FuelType
+  price                 Price[]
+  owner                 User?            @relation(fields: [ownerId], references: [id])
+  //new fields
+  oneDayRentalPrice     Float
+  oneDayRentalKilometer String
+  acceptenceDate        DateTime?
+  slug                  String           @unique
+  contactCount          Int              @default(0)
+  city                  String
+  carPromotions         CarPromotion[]
+}
+
+model CarPromotion {
+  id                String        @id @default(auto()) @map("_id") @db.ObjectId
+  carId             String        @db.ObjectId
+  car               Car           @relation(fields: [carId], references: [id])
+  purchaseHistoryId String?       @db.ObjectId
+  promotionType     PromotionType @default(IN_CIMA)
+  startTime         DateTime
+  endTime           DateTime?
+  createdAt         DateTime      @default(now()) @map("createdAt") @db.Timestamp
+  updatedAt         DateTime      @updatedAt @map("updatedAt") @db.Timestamp
+}
+
+model CarBookingMessage {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  checkInDate    String
+  checkOutDate   String
+  checkInTime    String
+  checkOutTime   String
+  carId          String
+  email          String
+  phoneNumber    String
+  message        String
+  specialRequest String?
+  createdAt      DateTime @default(now()) @map("createdAt") @db.Timestamp
+  updatedAt      DateTime @updatedAt @map("updatedAt") @db.Timestamp
+}
+
+model Subscription {
+  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  subscriptionType     SubscriptionType   @default(STANDARD)
+  userId               String             @db.ObjectId
+  status               SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId     String
+  stripeSubscriptionId String             @unique
+  paymentMethod        String
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  price                Float
+  billingCycle         BillingCycle       @default(MONTHLY)
+  createdAt            DateTime           @default(now()) @map("createdAt") @db.Timestamp
+  updatedAt            DateTime           @updatedAt @map("updatedAt") @db.Timestamp
+  subscriptionPlan     SubscriptionPlan   @relation(fields: [subscriptionPlanId], references: [id])
+  subscriptionPlanId   String             @db.ObjectId
+  cancelledAtPeriodEnd Boolean            @default(false)
+}
+
+model SubscriptionPlan {
+  id                      String           @id @default(auto()) @map("_id") @db.ObjectId
+  name                    SubscriptionType
+  description             String
+  features                String[]
+  monthlyPrice            Float
+  sixMonthDiscount        Float?
+  yearlyDiscount          Float?
+  isActive                Boolean          @default(true)
+  stripeProductId         String
+  stripeMonthlyPriceId    String
+  stripeSixMonthlyPriceId String?
+  stripeYearlyPriceId     String?
+  subscriptions           Subscription[]
+  createdAt               DateTime         @default(now()) @map("createdAt") @db.Timestamp
+  updatedAt               DateTime         @updatedAt @map("updatedAt") @db.Timestamp
+}
+
+type Price {
+  rentalTime       Float?
+  price            Float?
+  kilometerPerHour String?
+}
+
+enum PromotionType {
+  IN_CIMA
+  IN_HOMEPAGE
+  IN_RISALTO
+  PACCHETTO_3IN1
+}
+
+enum PurchaseHistoryStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum BillingCycle {
+  MONTHLY
+  SIX_MONTHLY
+  YEARLY
+}
+
+enum SubscriptionType {
+  STANDARD
+  PLUS
+  BUSINESS
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  INCOMPLETE
+}
+
+enum FuelType {
+  IBRIDO
+  ELETTRICO
+  DIESEL
+  BENZINA
+}
+
+enum Transmission {
+  MANUAL
+  AUTOMATIC
+}
+
+enum CarType {
+  NORMAL
+  BEST_OFFER
+  POPULAR
+}
+
+enum AdvertisingType {
+  AT_THE_TOP
+  IN_HOMEPAGE
+  HIGHLIGHTED
+  ALL
+}
+
+enum UserRole {
+  ADMIN
+  SUPER_ADMIN
+  CAR_OWNER
+  USER
+}
+
+enum AcceptanceStatus {
+  ACCEPTED
+  PENDING
+  REJECTED
+}
+
+enum CarStatus {
+  SUSPEND
+  ACTIVE
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+}
+
+// model Category {
+//   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+//   name      String @unique
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   Car       Car[]
+// }
+// model Brand {
+//   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+//   name      String   @unique
+//   logo      String
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   Car       Car[]
+// }
