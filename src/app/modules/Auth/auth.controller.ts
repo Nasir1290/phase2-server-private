@@ -16,7 +16,8 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
     res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: config.env === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: "/",
     });
   }
@@ -26,7 +27,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
     res.cookie("accessToken", result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: config.env === "production" ? "none" : "lax",
       path: "/",
     });
   }
@@ -52,14 +53,14 @@ const enterOtp = catchAsync(async (req: Request, res: Response) => {
   res.cookie("accessToken", result.accessToken, {
     secure: config.env === "production",
     httpOnly: true,
-    sameSite: "none",
-    // maxAge: 1000 * 60 * 60 * 24 * 365,
+    sameSite: config.env === "production" ? "none" : "lax",
+    maxAge: 1000 * 60 * 60 * 24 * 365,
   });
   res.cookie("refreshToken", result.refreshToken, {
     secure: config.env === "production",
     httpOnly: true,
-    sameSite: "none",
-    // maxAge: 1000 * 60 * 60 * 24 * 365,
+    sameSite: config.env === "production" ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
   sendResponse(res, {
@@ -78,16 +79,16 @@ const logoutUser = catchAsync(async (req: Request, res: Response) => {
   // Clear the refresh token from cookie
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: config.env === "production",
+    sameSite: config.env === "production" ? "none" : "lax",
     path: "/",
   });
 
   //clear the access toke from cookie
   res.clearCookie("accessToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: config.env === "production",
+    sameSite: config.env === "production" ? "none" : "lax",
     path: "/",
   });
 
