@@ -17,20 +17,41 @@ const getAllSubscriptionPlan = catchAsync(async (req: Request, res: Response) =>
   });
 });
 
-const createSubscription = catchAsync(async (req: Request, res: Response) => {
-  const { subscriptionPlanId, billingCycle, paymentMethodId } = req.body;
+// const createSubscription = catchAsync(async (req: Request, res: Response) => {
+//   const { subscriptionPlanId, billingCycle, paymentMethodId } = req.body;
+//   const userId = req.user.id;
+//   const result = await SubscriptionService.createSubscription(
+//     userId,
+//     subscriptionPlanId,
+//     billingCycle,
+//     paymentMethodId
+//   );
+//   sendResponse(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: "Subscription created successfully",
+//     data: result,
+//   });
+// });
+
+
+const createSubscriptionCheckout = catchAsync(async (req: Request, res: Response) => {
+  const { subscriptionPlanId, billingCycle = "MONTHLY" ,successUrl,cancelUrl} = req.body;
   const userId = req.user.id;
-  const result = await SubscriptionService.createSubscription(
+
+  const result = await SubscriptionService.createSubscriptionCheckout(
     userId,
     subscriptionPlanId,
     billingCycle,
-    paymentMethodId
+    successUrl,
+    cancelUrl
   );
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Subscription created successfully",
-    data: result,
+    message: "Redirect to Stripe Checkout",
+    data: { checkoutUrl: result.checkoutUrl },
   });
 });
 
@@ -82,7 +103,8 @@ const getUserSubscription = catchAsync(async (req: Request, res: Response) => {
 
 export const SubscriptionController = {
   getAllSubscriptionPlan,
-  createSubscription,
+  // createSubscription,
+  createSubscriptionCheckout,
   cancelSubscription,
   updateSubscription,
   reactivateSubscription,

@@ -71,7 +71,6 @@ const createCar = async (payload: CreateCarInput) => {
   }
   console.log(oneDayRentalPrice, oneDayRentalKilometer);
   rest.price = rest.price.filter((rt) => rt.rentalTime !== 24);
-  console.log(rest.price);
 
   // for maximum uniqueness and shorter URLs, use short ID
   slug = `${base}-${nanoid(4)}`;

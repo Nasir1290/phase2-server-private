@@ -1,15 +1,19 @@
 import { z } from "zod";
 
-const createCarBookingMessageSchema = z.object({
+export const createCarBookingMessageSchema = z.object({
   body: z.object({
-    checkInDate: z.string(),
-    checkOutDate: z.string(),
-    checkInTime: z.string(),
-    checkOutTime: z.string(),
-    carId: z.string(),
-    email: z.string().email(),
-    phoneNumber: z.string(),
-    message: z.string(),
+    checkInDate: z.string().nonempty("Check-in date is required"),
+    checkOutDate: z.string().nonempty("Check-out date is required"),
+    checkInTime: z.string().nonempty("Check-in time is required"),
+    checkOutTime: z.string().nonempty("Check-out time is required"),
+    firstName: z.string().nonempty("first name is required"),
+    totalKilometer: z.string().nonempty("total kilometer is required"),
+    lastName: z.string().optional(),
+    dateOfBirth: z.string().nonempty("Date of Birth is required"),
+    carId: z.string().nonempty("Car ID is required"),
+    email: z.string().email("Invalid email address"),
+    phoneNumber: z.string().nonempty("Phone number is required"),
+    message: z.string().optional(),
     specialRequest: z.string().optional(),
   }),
 });
@@ -25,6 +29,10 @@ const updateCarBookingMessageSchema = z.object({
     phoneNumber: z.string().optional(),
     message: z.string().optional(),
     specialRequest: z.string().optional(),
+    firstName: z.string().optional(),
+    totalKilometer: z.string().optional(),
+    lastName: z.string().optional(),
+    dateOfBirth: z.string().optional(),
   }),
 });
 

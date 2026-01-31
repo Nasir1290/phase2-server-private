@@ -9,6 +9,7 @@ import { SubscriptionRoutes } from "../modules/Subscription/subscription.route";
 import { StripeRoutes } from "../modules/Stripe/stripe.route";
 import { PromotionRoutes } from "../modules/Promotion/promotion.route";
 import { AdminRoutes } from "../modules/Admin/admin.route";
+import { favouriteRoutes } from "../modules/Favourite/favourite.route";
 // import { categoryRoutes } from "../modules/Category/category.routes";
 // import { brandRoutes } from "../modules/Brand/brand.routes";
 
@@ -53,6 +54,10 @@ const moduleRoutes = [
   {
     path: "/admin",
     route: AdminRoutes,
+  },
+  {
+    path: "/favourite",
+    route: favouriteRoutes,
   },
   // {
   //   path: "/category",

@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import ApiError from "../../../errors/ApiErrors";
 import prisma from "../../../shared/prisma";
 import { User, UserRole, UserStatus } from "@prisma/client";
-import { TUser } from "./user.interface";
+import { TUser, userSelectFields } from "./user.interface";
 import httpStatus from "http-status";
 import { deletePreviousFile } from "../../../utils/deletePreviousFile";
 import emailSender from "../../../helpars/emailSender";
@@ -21,7 +21,7 @@ const createUser = async (payload: User) => {
   if (existingUser) {
     throw new ApiError(
       httpStatus.CONFLICT,
-      "This user information already exists"
+      "This user information already exists",
     );
   }
 
@@ -35,6 +35,7 @@ const createUser = async (payload: User) => {
 
   const user = await prisma.user.create({
     data: userData,
+    select: userSelectFields,
   });
   if (!user) {
     throw new ApiError(httpStatus.CONFLICT, "User not created!");

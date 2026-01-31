@@ -26,7 +26,8 @@ const getAllCarBookingMessages = catchAsync(async (req: Request, res: Response) 
 });
 
 const getSingleCarBookingMessage = catchAsync(async (req: Request, res: Response) => {
-    const result = await carbookingmessageService.getSingleCarBookingMessage(req.params.id);
+    const user = req.user;
+    const result = await carbookingmessageService.getSingleCarBookingMessage(req.params.id,user.id);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,

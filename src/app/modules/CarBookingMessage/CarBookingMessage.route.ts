@@ -8,12 +8,14 @@ const router = Router();
 
 router.post(
   "/create",
+  auth(),
   validateRequest(carBookingMessageValidation.createCarBookingMessageSchema),
   carbookingmessageController.createCarBookingMessage
 );
 router.get("/get-all", carbookingmessageController.getAllCarBookingMessages);
 router.get(
   "/get-single/:id",
+  auth(),
   carbookingmessageController.getSingleCarBookingMessage
 );
 router.put(

@@ -12,7 +12,7 @@ const router = express.Router();
 router.post(
   "/login",
   validateRequest(UserValidation.UserLoginValidationSchema),
-  AuthController.loginUser
+  AuthController.loginUser,
 );
 
 router.post("/otp-enter", AuthController.enterOtp);
@@ -24,14 +24,12 @@ router.get("/get-me", auth(), AuthController.getMyProfile);
 
 // router.post("/social-login", AuthController.socialLogin);
 
-router.put(
-  "/change-password",
-  auth(),
-  AuthController.changePassword
-);
+router.put("/change-password", auth(), AuthController.changePassword);
 
 router.post("/forgot-password", AuthController.forgotPassword);
 
 router.post("/reset-password", AuthController.resetPassword);
+router.post("/refresh-token", AuthController.refreshAccessToken);
+router.get("/is-car-owner/:id",AuthController.isCarOwner)
 
 export const AuthRoutes = router;

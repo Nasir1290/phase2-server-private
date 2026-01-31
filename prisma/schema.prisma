@@ -8,38 +8,41 @@ datasource db {
 }
 
 model User {
-  id                   String            @id @default(auto()) @map("_id") @db.ObjectId
-  firstName            String
-  profilePic           String?
-  lastName             String?
-  sureName             String?
-  phoneNumber          String
-  website              String?
-  email                String            @unique
-  password             String
-  isVerified           Boolean           @default(false)
-  otp                  Int?
-  otpExpiry            DateTime?
-  isDeleted            Boolean           @default(false)
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
-  cantone              String?
-  indirizzo            String?
-  cap                  String?
-  role                 UserRole
-  userStatus           UserStatus        @default(ACTIVE)
-  Car                  Car[]
+  id                      String              @id @default(auto()) @map("_id") @db.ObjectId
+  firstName               String
+  profilePic              String?
+  lastName                String?
+  sureName                String?
+  phoneNumber             String
+  website                 String?
+  email                   String              @unique
+  password                String
+  isVerified              Boolean             @default(false)
+  otp                     Int?
+  otpExpiry               DateTime?
+  isDeleted               Boolean             @default(false)
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+  cantone                 String?
+  indirizzo               String?
+  cap                     String?
+  role                    UserRole
+  userStatus              UserStatus          @default(ACTIVE)
+  Car                     Car[]
   //new fields
-  subscriptionType     SubscriptionType  @default(STANDARD)
-  subscriptionId       String?           @db.ObjectId
-  inCimaTimes          Int               @default(0)
-  inHomePageDays       Int               @default(0)
-  inRisaltoDays        Int               @default(0)
-  purchaseHistories    PurchaseHistory[]
+  subscriptionType        SubscriptionType    @default(STANDARD)
+  subscriptionId          String?             @db.ObjectId
+  inCimaTimes             Int                 @default(0)
+  inHomePageDays          Int                 @default(0)
+  inRisaltoDays           Int                 @default(0)
+  purchaseHistories       PurchaseHistory[]
   // one user will have one billing data
-  billingDataId        String?           @db.ObjectId
-  realtimeNotification Boolean           @default(false)
-  notificationSOund    Boolean           @default(false)
+  billingDataId           String?             @db.ObjectId
+  realtimeNotification    Boolean             @default(false)
+  notificationSOund       Boolean             @default(false)
+  favouriteCars           FavouriteCar[]
+  CarOwnerBookingMessages CarBookingMessage[] @relation("CarOwnerBookingMessages")
+  UserBookingMessages     CarBookingMessage[] @relation("UserBookingMessages")
 }
 
 model BillingData {
@@ -80,9 +83,9 @@ model Promotion {
 }
 
 model Car {
-  id                    String           @id @default(auto()) @map("_id") @db.ObjectId
+  id                    String              @id @default(auto()) @map("_id") @db.ObjectId
   model                 String
-  ownerId               String           @db.ObjectId
+  ownerId               String              @db.ObjectId
   year                  Int
   color                 String
   kmh                   Float
@@ -105,32 +108,44 @@ model Car {
   phoneNumber           String
   email                 String
   whatsapp              String
-  location              String           @default("")
+  location              String              @default("")
   latitude              Float?
   longitude             Float?
-  locationType          String           @default("POINT")
+  locationType          String              @default("POINT")
   authenticationFile    String
-  viewCount             Int              @default(0)
-  createdAt             DateTime         @default(now()) @map("createdAt") @db.Timestamp
-  updatedAt             DateTime         @updatedAt @map("updatedAt") @db.Timestamp
+  viewCount             Int                 @default(0)
+  createdAt             DateTime            @default(now()) @map("createdAt") @db.Timestamp
+  updatedAt             DateTime            @updatedAt @map("updatedAt") @db.Timestamp
   category              String
   // brand              String
-  acceptanceStatus      AcceptanceStatus @default(PENDING)
-  carType               CarType          @default(NORMAL)
-  carStatus             CarStatus        @default(ACTIVE)
+  acceptanceStatus      AcceptanceStatus    @default(PENDING)
+  carType               CarType             @default(NORMAL)
+  carStatus             CarStatus           @default(ACTIVE)
   transmission          Transmission
   advertisingType       AdvertisingType?
   fuelType              FuelType
   price                 Price[]
-  owner                 User?            @relation(fields: [ownerId], references: [id])
+  owner                 User?               @relation(fields: [ownerId], references: [id])
   //new fields
   oneDayRentalPrice     Float
   oneDayRentalKilometer String
   acceptenceDate        DateTime?
-  slug                  String           @unique
-  contactCount          Int              @default(0)
+  slug                  String              @unique
+  contactCount          Int                 @default(0)
   city                  String
   carPromotions         CarPromotion[]
+  favouriteCars         FavouriteCar[]
+  carBookingMessages    CarBookingMessage[]
+}
+
+model FavouriteCar {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  carId     String   @db.ObjectId
+  car       Car      @relation(fields: [carId], references: [id])
+  createdAt DateTime @default(now()) @map("createdAt") @db.Timestamp
+  updatedAt DateTime @updatedAt @map("updatedAt") @db.Timestamp
 }
 
 model CarPromotion {
@@ -151,10 +166,19 @@ model CarBookingMessage {
   checkOutDate   String
   checkInTime    String
   checkOutTime   String
-  carId          String
+  totalKilometer String
+  firstName      String
+  lastName       String
+  dateOfBirth    String
+  carId          String   @db.ObjectId
+  car            Car      @relation(fields: [carId], references: [id])
+  carOwnerId     String   @db.ObjectId
+  carOwner       User     @relation("CarOwnerBookingMessages", fields: [carOwnerId], references: [id])
+  userId         String   @db.ObjectId
+  user           User     @relation("UserBookingMessages", fields: [userId], references: [id])
   email          String
   phoneNumber    String
-  message        String
+  message        String?
   specialRequest String?
   createdAt      DateTime @default(now()) @map("createdAt") @db.Timestamp
   updatedAt      DateTime @updatedAt @map("updatedAt") @db.Timestamp

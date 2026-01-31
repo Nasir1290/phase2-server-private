@@ -6,7 +6,7 @@ export const SubscriptionValidation = {
     body: z.object({
       subscriptionPlanId: z.string().min(1),
       billingCycle: z.nativeEnum(BillingCycle),
-      paymentMethodId: z.string().min(1),
+      // paymentMethodId: z.string().min(1),
     }),
   }),
   updateSubscription: z.object({

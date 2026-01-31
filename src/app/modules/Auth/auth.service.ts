@@ -34,7 +34,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
 
   const isCorrectPassword: boolean = await bcrypt.compare(
     payload.password,
-    userData.password
+    userData.password,
   );
 
   if (!isCorrectPassword) {
@@ -49,7 +49,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
         role: userData.role,
       },
       config.jwt.jwt_secret as Secret,
-      config.jwt.expires_in as string
+      config.jwt.expires_in as string,
     );
 
     const refreshToken = jwtHelpers.generateToken(
@@ -59,12 +59,37 @@ const loginUser = async (payload: { email: string; password: string }) => {
         role: userData.role,
       },
       config.jwt.refresh_token_secret as Secret,
-      config.jwt.refresh_token_expires_in as string
+      config.jwt.refresh_token_expires_in as string,
     );
 
     return {
       accessToken,
       refreshToken,
+      user: {
+        id: userData.id,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        sureName: userData.sureName,
+        profilePic: userData.profilePic,
+        role: userData.role,
+        website: userData.website,
+        cantone: userData.cantone,
+        indirizzo: userData.indirizzo,
+        cap: userData.cap,
+        phoneNumber: userData.phoneNumber,
+        email: userData.email,
+        isVerified: userData.isVerified,
+        createdAt: userData.createdAt,
+        updatedAt: userData.updatedAt,
+        userStatus: userData.userStatus,
+        billingDataId: userData.billingDataId,
+        inRisaltoDays: userData.inRisaltoDays,
+        inHomePageDays: userData.inHomePageDays,
+        inCimaTimes: userData.inCimaTimes,
+        subscriptionType: userData.subscriptionType,
+        realtimeNotification: userData.realtimeNotification,
+        notificationSOund: userData.notificationSOund,
+      },
       message: "User logged in successfully",
     };
   }
@@ -143,7 +168,17 @@ const enterOtp = async (payload: { otp: string }) => {
       role: userData.role,
     },
     config.jwt.jwt_secret as Secret,
-    config.jwt.expires_in as string
+    config.jwt.expires_in as string,
+  );
+
+  const refreshToken = jwtHelpers.generateToken(
+    {
+      id: userData.id,
+      email: userData.email,
+      role: userData.role,
+    },
+    config.jwt.refresh_token_secret as Secret,
+    config.jwt.refresh_token_expires_in as string,
   );
 
   await prisma.user.update({
@@ -159,6 +194,32 @@ const enterOtp = async (payload: { otp: string }) => {
 
   const result = {
     accessToken,
+    refreshToken,
+    user: {
+      id: userData.id,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      sureName: userData.sureName,
+      profilePic: userData.profilePic,
+      role: userData.role,
+      website: userData.website,
+      cantone: userData.cantone,
+      indirizzo: userData.indirizzo,
+      cap: userData.cap,
+      phoneNumber: userData.phoneNumber,
+      email: userData.email,
+      isVerified: userData.isVerified,
+      createdAt: userData.createdAt,
+      updatedAt: userData.updatedAt,
+      userStatus: userData.userStatus,
+      billingDataId: userData.billingDataId,
+      inRisaltoDays: userData.inRisaltoDays,
+      inHomePageDays: userData.inHomePageDays,
+      inCimaTimes: userData.inCimaTimes,
+      subscriptionType: userData.subscriptionType,
+      realtimeNotification: userData.realtimeNotification,
+      notificationSOund: userData.notificationSOund,
+    },
   };
 
   return result;
@@ -168,7 +229,7 @@ const enterOtp = async (payload: { otp: string }) => {
 const getMyProfile = async (userToken: string) => {
   const decodedToken = jwtHelpers.verifyToken(
     userToken,
-    config.jwt.jwt_secret!
+    config.jwt.jwt_secret!,
   );
   const result = await prisma.$transaction(async (TransactionClient) => {
     const userProfile = await TransactionClient.user.findUnique({
@@ -214,7 +275,7 @@ const forgotPassword = async (payload: { email: string }) => {
   const resetPassToken = jwtHelpers.generateToken(
     { email: userData.email, role: userData.role },
     config.jwt.reset_pass_secret as Secret,
-    config.jwt.reset_pass_token_expires_in as string
+    config.jwt.reset_pass_token_expires_in as string,
   );
 
   const resetPassLink =
@@ -256,7 +317,7 @@ const forgotPassword = async (payload: { email: string }) => {
         </div>
     </div>
 </body>
-</html>`
+</html>`,
   );
   return {
     message: "Reset password link sent via your email successfully",
@@ -266,7 +327,7 @@ const forgotPassword = async (payload: { email: string }) => {
 // reset password
 const resetPassword = async (
   token: string,
-  payload: { id: string; password: string }
+  payload: { id: string; password: string },
 ) => {
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
@@ -278,7 +339,7 @@ const resetPassword = async (
   }
   const isValidToken = jwtHelpers.verifyToken(
     token,
-    config.jwt.reset_pass_secret as Secret
+    config.jwt.reset_pass_secret as Secret,
   );
   if (!isValidToken) {
     throw new ApiError(httpStatus.FORBIDDEN, "Forbidden!");
@@ -303,11 +364,11 @@ const resetPassword = async (
 const changePassword = async (
   userToken: string,
   newPassword: string,
-  oldPassword: string
+  oldPassword: string,
 ) => {
   const decodedToken = jwtHelpers.verifyToken(
     userToken,
-    config.jwt.jwt_secret!
+    config.jwt.jwt_secret!,
   );
 
   const user = await prisma.user.findUnique({
@@ -419,6 +480,117 @@ const changePassword = async (
 //   return result;
 // };
 
+const refreshAccessToken = async (refreshToken: string) => {
+  try {
+    if (!refreshToken) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Refresh token is required");
+    }
+
+    // Verify the refresh token
+    const decodedToken = jwtHelpers.verifyToken(
+      refreshToken,
+      config.jwt.refresh_token_secret as Secret,
+    );
+
+    if (!decodedToken) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid refresh token");
+    }
+
+    // Find the user
+    const userData = await prisma.user.findUnique({
+      where: {
+        id: decodedToken.id,
+        userStatus: UserStatus.ACTIVE,
+        isDeleted: false,
+      },
+    });
+
+    if (!userData) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, "User not found or inactive");
+    }
+
+    // Check if user is verified
+    if (!userData.isVerified) {
+      throw new ApiError(
+        httpStatus.FORBIDDEN,
+        "Please verify your email first",
+      );
+    }
+
+    // Generate new tokens
+    const newAccessToken = jwtHelpers.generateToken(
+      {
+        id: userData.id,
+        email: userData.email,
+        role: userData.role,
+      },
+      config.jwt.jwt_secret as Secret,
+      config.jwt.expires_in as string,
+    );
+
+    const newRefreshToken = jwtHelpers.generateToken(
+      {
+        id: userData.id,
+        email: userData.email,
+        role: userData.role,
+      },
+      config.jwt.refresh_token_secret as Secret,
+      config.jwt.refresh_token_expires_in as string,
+    );
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+      user: {
+        id: userData.id,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        sureName: userData.sureName,
+        profilePic: userData.profilePic,
+        role: userData.role,
+        website: userData.website,
+        cantone: userData.cantone,
+        indirizzo: userData.indirizzo,
+        cap: userData.cap,
+        phoneNumber: userData.phoneNumber,
+        email: userData.email,
+        isVerified: userData.isVerified,
+        createdAt: userData.createdAt,
+        updatedAt: userData.updatedAt,
+        userStatus: userData.userStatus,
+        billingDataId: userData.billingDataId,
+        inRisaltoDays: userData.inRisaltoDays,
+        inHomePageDays: userData.inHomePageDays,
+        inCimaTimes: userData.inCimaTimes,
+        subscriptionType: userData.subscriptionType,
+        realtimeNotification: userData.realtimeNotification,
+        notificationSOund: userData.notificationSOund,
+      },
+    };
+  } catch (error: any) {
+    // Handle specific JWT errors
+    if (error.name === "TokenExpiredError") {
+      throw new ApiError(httpStatus.UNAUTHORIZED, "Refresh token has expired");
+    }
+    if (error.name === "JsonWebTokenError") {
+      throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid refresh token");
+    }
+    throw error;
+  }
+};
+
+const isCarOwner = async (id: string) => {
+  const carOwner = await prisma.user.findUnique({
+    where: {
+      id: id,
+      Car: {
+        some: {},
+      },
+    },
+  });
+  return carOwner ? true : false;
+};
+
 export const AuthServices = {
   loginUser,
   enterOtp,
@@ -426,5 +598,7 @@ export const AuthServices = {
   changePassword,
   forgotPassword,
   resetPassword,
+  refreshAccessToken,
+  isCarOwner
   // socialLogin,
 };

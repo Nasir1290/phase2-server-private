@@ -6,6 +6,7 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { AuthServices } from "./auth.service";
 import { authValidation } from "./auth.validation";
+import ApiError from "../../../errors/ApiErrors";
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
   const result = await AuthServices.loginUser(req.body);
@@ -20,12 +21,26 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
     });
   }
 
+  if (result.accessToken) {
+    // Set refresh token in cookies for verified users
+    res.cookie("accessToken", result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
+  }
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: result.message,
     data: result.accessToken
-      ? { accessToken: result.accessToken, refreshToken: result.refreshToken }
+      ? {
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+          user: result.user,
+        }
       : {},
   });
 });
@@ -34,18 +49,28 @@ const enterOtp = catchAsync(async (req: Request, res: Response) => {
   const result = await AuthServices.enterOtp(req.body);
 
   // res.cookie("token", result.accessToken, { httpOnly: true });
-  res.cookie("token", result.accessToken, {
+  res.cookie("accessToken", result.accessToken, {
     secure: config.env === "production",
     httpOnly: true,
     sameSite: "none",
-    maxAge: 1000 * 60 * 60 * 24 * 365,
+    // maxAge: 1000 * 60 * 60 * 24 * 365,
+  });
+  res.cookie("refreshToken", result.refreshToken, {
+    secure: config.env === "production",
+    httpOnly: true,
+    sameSite: "none",
+    // maxAge: 1000 * 60 * 60 * 24 * 365,
   });
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "User logged in successfully",
-    data: result,
+    data: {
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      user: result.user,
+    },
   });
 });
 
@@ -95,7 +120,7 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
   const result = await AuthServices.changePassword(
     userToken as string,
     newPassword,
-    oldPassword
+    oldPassword,
   );
   sendResponse(res, {
     success: true,
@@ -142,6 +167,55 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
 //   });
 // });
 
+// Add this to your auth.controller.ts
+
+const refreshAccessToken = catchAsync(async (req: Request, res: Response) => {
+  const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+
+  if (!refreshToken) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Refresh token is required");
+  }
+
+  const result = await AuthServices.refreshAccessToken(refreshToken);
+
+  // Set new refresh token in cookie
+  res.cookie("refreshToken", result.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/",
+    // maxAge: 30 * 24 * 60 * 60 * 1000,
+  });
+  res.cookie("accessToken", result.accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/",
+    // maxAge: 30 * 24 * 60 * 60 * 1000,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Access token refreshed successfully",
+    data: {
+      accessToken: result.accessToken,
+      user: result.user,
+    },
+  });
+});
+
+const isCarOwner = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const data = await AuthServices.isCarOwner(id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Retrieve car owner status successfully.",
+    data: { isCarOwner: data },
+  });
+});
+
 export const AuthController = {
   loginUser,
   enterOtp,
@@ -150,5 +224,7 @@ export const AuthController = {
   changePassword,
   forgotPassword,
   resetPassword,
+  refreshAccessToken,
+  isCarOwner,
   // socialLogin,
 };

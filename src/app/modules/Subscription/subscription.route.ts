@@ -10,11 +10,17 @@ const router = express.Router();
 
 router.get("/get-all", SubscriptionController.getAllSubscriptionPlan);
 
+// router.post(
+//   "/create",
+//   auth(),
+//   validateRequest(SubscriptionValidation.createSubscription),
+//   SubscriptionController.createSubscription
+// );
 router.post(
-  "/create",
+  "/checkout",
   auth(),
   validateRequest(SubscriptionValidation.createSubscription),
-  SubscriptionController.createSubscription
+  SubscriptionController.createSubscriptionCheckout
 );
 
 router.post("/cancel", auth(), SubscriptionController.cancelSubscription);

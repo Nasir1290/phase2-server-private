@@ -4,6 +4,7 @@ import QueryBuilder from "../../../utils/queryBuilder";
 import ApiError from "../../../errors/ApiErrors";
 import httpStatus from "http-status";
 import emailSender from "../../../helpars/emailSender";
+import { userSelectFields } from "../User/user.interface";
 
 const sendCarBookingEmail = async (findCar: any, req: Request) => {
   // Date formatting function
@@ -342,29 +343,29 @@ const sendCarBookingEmail = async (findCar: any, req: Request) => {
                                               <p style="margin: 0;"><span style="font-size: 13px;">${
                                                 findCar.brand
                                               } ${findCar.model} (${
-      findCar.year
-    })</span></p>
+                                                findCar.year
+                                              })</span></p>
                                               <p style="margin: 0;">&nbsp;</p>
                                               <p style="margin: 0;"><span style="font-size: 13px;">Proprietario:</span></p>
                                               <p style="margin: 0;"><a href="mailto:${
                                                 findCar.email
                                               }" style="color: #d1252b; text-decoration: underline;"><span style="font-size: 13px;">${
-      findCar.email
-    }</span></a></p>
+                                                findCar.email
+                                              }</span></a></p>
                                               <p style="margin: 0;">&nbsp;</p>
                                               <p style="margin: 0;"><span style="font-size: 13px;">Check-in:</span></p>
                                               <p style="margin: 0;"><span style="font-size: 13px;">${formatItalianDate(
-                                                req.body.checkInDate
+                                                req.body.checkInDate,
                                               )} alle ore ${
-      req.body.checkInTime
-    }</span></p>
+                                                req.body.checkInTime
+                                              }</span></p>
                                               <p style="margin: 0;">&nbsp;</p>
                                               <p style="margin: 0;"><span style="font-size: 13px;">Check-out:</span></p>
                                               <p style="margin: 0;"><span style="font-size: 13px;">${formatItalianDate(
-                                                req.body.checkOutDate
+                                                req.body.checkOutDate,
                                               )} alle ore ${
-      req.body.checkOutTime
-    }</span></p>
+                                                req.body.checkOutTime
+                                              }</span></p>
                                               ${
                                                 req.body.message
                                                   ? `
@@ -427,11 +428,14 @@ const sendCarBookingEmail = async (findCar: any, req: Request) => {
                                                   }
                                                   ${
                                                     p.kilometerPerHour
-                                                      ?(p.kilometerPerHour === "Unlimited") ? "(illimitati km)" : `(${p.kilometerPerHour} km)`
+                                                      ? p.kilometerPerHour ===
+                                                        "Unlimited"
+                                                        ? "(illimitati km)"
+                                                        : `(${p.kilometerPerHour} km)`
                                                       : ""
                                                   }
                                                 </span></p>
-                                              `
+                                              `,
                                                 )
                                                 .join("")}
                                             </div>
@@ -627,17 +631,17 @@ const sendCarBookingEmail = async (findCar: any, req: Request) => {
               <p class="text-sm" style="font-size: 0.875rem;"><a href="mailto:${
                 req.body.email
               }" class="text-orange-600" style="color: #FF7600;">${
-      req.body.email
-    }</a></p>
+                req.body.email
+              }</a></p>
               <p class="py-1" style="padding-top: 0.25rem; padding-bottom: 0.25rem;"></p>
               <p class="text-sm" style="font-size: 0.875rem;">Check-in:</p>
               <p class="text-sm" style="font-size: 0.875rem;">${formatItalianDate(
-                req.body.checkInDate
+                req.body.checkInDate,
               )} alle ore ${req.body.checkInTime}</p>
               <p class="py-1" style="padding-top: 0.25rem; padding-bottom: 0.25rem;"></p>
               <p class="text-sm" style="font-size: 0.875rem;">Check-out:</p>
               <p class="text-sm" style="font-size: 0.875rem;">${formatItalianDate(
-                req.body.checkOutDate
+                req.body.checkOutDate,
               )} alle ore ${req.body.checkOutTime}</p>
               <p class="py-1" style="padding-top: 0.25rem; padding-bottom: 0.25rem;"></p>
               <p class="text-sm" style="font-size: 0.875rem;">Numero di telefono:</p>
@@ -676,9 +680,9 @@ const sendCarBookingEmail = async (findCar: any, req: Request) => {
                   (p: any) => `
                 <p class="text-sm" style="font-size: 0.875rem;">
                   ${p.rentalTime}h: CHF ${p.price}
-                  ${p.kilometerPerHour ? (p.kilometerPerHour === "Unlimited") ? "(illimitati km)" : `(${p.kilometerPerHour} km)` : ""}
+                  ${p.kilometerPerHour ? (p.kilometerPerHour === "Unlimited" ? "(illimitati km)" : `(${p.kilometerPerHour} km)`) : ""}
                 </p>
-              `
+              `,
                 )
                 .join("")}
             </div>
@@ -744,34 +748,72 @@ const sendCarBookingEmail = async (findCar: any, req: Request) => {
   await emailSender(
     "Nuova richiesta di noleggio",
     req.body.email,
-    generateRecieveCarBookingEmail()
+    generateRecieveCarBookingEmail(),
   );
 
   return "Booking email sent successfully";
 };
 
 const createCarBookingMessage = async (req: Request) => {
-  const carId = req.body.carId;
+  const user = req.user;
+  const data = req.body;
+
+  const carId = data.carId;
+
   const findCar = await prisma.car.findUnique({
     where: { id: carId },
-    include: {
-      owner: true,
-    },
   });
 
   if (!findCar) {
     throw new ApiError(httpStatus.NOT_FOUND, "Car not found");
   }
 
-  const data = req.body;
-  const result = await prisma.carBookingMessage.create({ data });
+  // Ensure carOwnerId comes from DB, not client
+  data.carOwnerId = findCar.ownerId;
+  data.userId = user.id;
 
-  try {
-    // Send email to car owner (fire and forget)
-    await sendCarBookingEmail(findCar, req);
-  } catch (emailError) {
-    console.error("Failed to send booking email:", emailError);
+  console.log(data);
+
+  const result = await prisma.carBookingMessage.create({
+    data: {
+      checkInDate: data.checkInDate,
+      checkOutDate: data.checkOutDate,
+      checkInTime: data.checkInTime,
+      checkOutTime: data.checkOutTime,
+      carId: data.carId,
+      carOwnerId: data.carOwnerId,
+      userId: data.userId,
+      email: data.email,
+      phoneNumber: data.phoneNumber,
+      message: data.message,
+      specialRequest: data?.specialRequest,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      totalKilometer: data.totalKilometer,
+      dateOfBirth: data.dateOfBirth,
+    },
+    include: {
+      car: true,
+      carOwner: {
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          sureName: true,
+          lastName: true,
+        },
+      },
+    },
+  });
+
+  if (result) {
+    try {
+      await sendCarBookingEmail(findCar, req);
+    } catch (emailError) {
+      console.error("Failed to send booking email:", emailError);
+    }
   }
+
   return result;
 };
 
@@ -784,13 +826,19 @@ const getAllCarBookingMessages = async (query: Record<string, any>) => {
     .paginate()
     .fields()
     .execute();
-
   const meta = await queryBuilder.countTotal();
   return { meta, data: carbookingmessages };
 };
 
-const getSingleCarBookingMessage = async (id: string) => {
-  const result = await prisma.carBookingMessage.findUnique({ where: { id } });
+const getSingleCarBookingMessage = async (id: string, userId: string) => {
+  const result = await prisma.carBookingMessage.findUnique({
+    where: { id: id, userId: userId },
+    include: {
+      car: true,
+      carOwner: { select: userSelectFields },
+    },
+  });
+  console.log(result);
   return result;
 };
 
