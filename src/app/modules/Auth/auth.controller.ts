@@ -19,10 +19,10 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
       sameSite: config.env === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: "/",
-      // domain:
-      //   config.env === "production"
-      //     ? config.production_frontend_domain
-      //     : "localhost",
+      domain:
+        config.env === "production"
+          ? config.production_frontend_domain
+          : "localhost",
     });
   }
 
@@ -34,10 +34,10 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
       sameSite: config.env === "production" ? "none" : "lax",
       path: "/",
       maxAge: 7 * 60 * 60 * 24 * 365,
-      // domain:
-      //   config.env === "production"
-      //     ? config.production_frontend_domain
-      //     : "localhost",
+      domain:
+        config.env === "production"
+          ? config.production_frontend_domain
+          : "localhost",
     });
   }
 
@@ -64,20 +64,20 @@ const enterOtp = catchAsync(async (req: Request, res: Response) => {
     httpOnly: true,
     sameSite: config.env === "production" ? "none" : "lax",
     maxAge: 1000 * 60 * 60 * 24 * 365,
-    // domain:
-    //   config.env === "production"
-    //     ? config.production_frontend_domain
-    //     : "localhost",
+    domain:
+      config.env === "production"
+        ? config.production_frontend_domain
+        : "localhost",
   });
   res.cookie("refreshToken", result.refreshToken, {
     secure: config.env === "production",
     httpOnly: true,
     sameSite: config.env === "production" ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    // domain:
-    //   config.env === "production"
-    //     ? config.production_frontend_domain
-    //     : "localhost",
+    domain:
+      config.env === "production"
+        ? config.production_frontend_domain
+        : "localhost",
   });
 
   sendResponse(res, {
@@ -99,10 +99,10 @@ const logoutUser = catchAsync(async (req: Request, res: Response) => {
     secure: config.env === "production",
     sameSite: config.env === "production" ? "none" : "lax",
     path: "/",
-    // domain:
-    //   config.env === "production"
-    //     ? config.production_frontend_domain
-    //     : "localhost",
+    domain:
+      config.env === "production"
+        ? config.production_frontend_domain
+        : "localhost",
   });
 
   //clear the access toke from cookie
@@ -111,10 +111,10 @@ const logoutUser = catchAsync(async (req: Request, res: Response) => {
     secure: config.env === "production",
     sameSite: config.env === "production" ? "none" : "lax",
     path: "/",
-    // domain:
-    //   config.env === "production"
-    //     ? config.production_frontend_domain
-    //     : "localhost",
+    domain:
+      config.env === "production"
+        ? config.production_frontend_domain
+        : "localhost",
   });
 
   sendResponse(res, {
@@ -210,7 +210,7 @@ const refreshAccessToken = catchAsync(async (req: Request, res: Response) => {
     secure: config.env === "production",
     sameSite: config.env === "production" ? "none" : "lax",
     path: "/",
-    // maxAge: 30 * 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
   res.cookie("accessToken", result.accessToken, {
     httpOnly: true,
