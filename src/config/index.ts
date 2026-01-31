@@ -9,6 +9,7 @@ export default {
   env: process.env.NODE_ENV,
   backend_image_url: process.env.BACKEND_IMAGE_URL,
   frontend_url: process.env.FRONTEND_URL,
+  production_frontend_domain: process.env.PRODUCTION_FRONTEND_DOMAIN,
   stripe_secret_key: process.env.STRIPE_SECRET_KEY,
   stripe_publishable_key: process.env.STRIPE_PUBLISHABLE_KEY,
   stripe_client_id: process.env.STRIPE_CLIENT_ID,
