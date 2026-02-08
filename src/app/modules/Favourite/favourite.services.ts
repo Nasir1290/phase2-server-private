@@ -1,5 +1,6 @@
 import ApiError from "../../../errors/ApiErrors";
 import prisma from "../../../shared/prisma";
+import QueryBuilder from "../../../utils/queryBuilder";
 import { userSelectFields } from "../User/user.interface";
 
 const createFavouriteCar = async (userId: string, carId: string) => {
@@ -44,19 +45,17 @@ const deleteFavouriteCar = async (
   return result;
 };
 
-const getAllFavouriteCars = async (userId: string) => {
-  const result = await prisma.favouriteCar.findMany({
-    where: {
-      userId: userId,
-    },
-    include: {
+const getAllFavouriteCars = async (userId: string, query: any) => {
+  const queryBuilder = new QueryBuilder(prisma.favouriteCar, query);
+  const result = await queryBuilder
+    .rawFilter({ userId: userId })
+    .include({
       car: true,
-      //   user: {
-      //     select: userSelectFields,
-      //   },
-    },
-  });
-  return result;
+    })
+    .paginate()
+    .execute();
+  const meta = await queryBuilder.countTotal();
+  return { data: result, meta };
 };
 
 const getFavouriteCarIds = async (userId: string) => {
@@ -92,5 +91,5 @@ export const FavouriteServices = {
   deleteFavouriteCar,
   getAllFavouriteCars,
   getFavouriteCarIds,
-  isCarInFavourites
+  isCarInFavourites,
 };

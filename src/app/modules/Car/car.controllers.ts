@@ -33,10 +33,10 @@ const createCar = catchAsync(async (req: any, res: Response) => {
           })
       )
     );
-    if (imageUrls.length > 6) {
+    if (imageUrls.length > 12) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
-        "Maximum 6 images are allowed"
+        "Maximum 12 images are allowed"
       );
     }
     carData.otherImages = imageUrls;
@@ -93,10 +93,10 @@ const createCarByUser = catchAsync(async (req: any, res: Response) => {
           })
       )
     );
-    if (imageUrls.length > 6) {
+    if (imageUrls.length > 12) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
-        "Maximum 6 images are allowed"
+        "Maximum 12 images are allowed"
       );
     }
     carData.otherImages = imageUrls;
@@ -198,10 +198,10 @@ const updateCar = catchAsync(async (req: any, res: Response) => {
           })
       )
     );
-    if (imageUrls.length > 6) {
+    if (imageUrls.length > 12) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
-        "Maximum 6 images are allowed"
+        "Maximum 12 images are allowed"
       );
     }
     carData.otherImages = imageUrls;
@@ -260,10 +260,10 @@ const updateCarByOwner = catchAsync(async (req: any, res: Response) => {
           })
       )
     );
-    if (imageUrls.length > 6) {
+    if (imageUrls.length > 12) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
-        "Maximum 6 images are allowed"
+        "Maximum 12 images are allowed"
       );
     }
     carData.otherImages = imageUrls;

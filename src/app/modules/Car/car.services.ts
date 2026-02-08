@@ -34,7 +34,7 @@ const createCar = async (payload: CreateCarInput) => {
   const { latitude, longitude } = rest;
   const cityInformation = await getCityFromCoordinates(
     latitude as number,
-    longitude as number
+    longitude as number,
   );
   if (!cityInformation) {
     throw new ApiError(httpStatus.NOT_FOUND, "City not found!");
@@ -58,7 +58,7 @@ const createCar = async (payload: CreateCarInput) => {
   if (!oneDayRentalInfo) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      "One day rental info is required!"
+      "One day rental info is required!",
     );
   }
   const oneDayRentalPrice = oneDayRentalInfo.price;
@@ -66,7 +66,7 @@ const createCar = async (payload: CreateCarInput) => {
   if (!oneDayRentalPrice || !oneDayRentalKilometer) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      "One day rental price and kilometer per hour is required!"
+      "One day rental price and kilometer per hour is required!",
     );
   }
   console.log(oneDayRentalPrice, oneDayRentalKilometer);
@@ -210,10 +210,10 @@ const updateCar = async (id: string, data: Partial<UpdateCarInput>) => {
   if (data.price) {
     if (data.price.find((p) => p.rentalTime === 24)) {
       data.oneDayRentalPrice = data.price.find(
-        (p) => p.rentalTime === 24
+        (p) => p.rentalTime === 24,
       )?.price!;
       data.oneDayRentalKilometer = data.price.find(
-        (p) => p.rentalTime === 24
+        (p) => p.rentalTime === 24,
       )?.kilometerPerHour!;
       data.price = data.price.filter((p) => p.rentalTime !== 24);
     }
@@ -226,7 +226,7 @@ const updateCar = async (id: string, data: Partial<UpdateCarInput>) => {
   try {
     if (existingCar.otherImages && data.otherImages) {
       existingCar.otherImages.map(
-        async (image: string) => await deleteFileFromS3(image)
+        async (image: string) => await deleteFileFromS3(image),
       );
     }
     if (existingCar.mainImage && data.mainImage) {
@@ -247,7 +247,7 @@ const updateCar = async (id: string, data: Partial<UpdateCarInput>) => {
 const updateCarByOwner = async (
   ownerId: string,
   id: string,
-  data: Partial<UpdateCarInput>
+  data: Partial<UpdateCarInput>,
 ) => {
   const existingCar = await prisma.car.findUnique({
     where: { id },
@@ -259,16 +259,16 @@ const updateCarByOwner = async (
   if (existingCar.ownerId !== ownerId) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      "You are not the owner of this car."
+      "You are not the owner of this car.",
     );
   }
   if (data.price) {
     if (data.price.find((p) => p.rentalTime === 24)) {
       data.oneDayRentalPrice = data.price.find(
-        (p) => p.rentalTime === 24
+        (p) => p.rentalTime === 24,
       )?.price!;
       data.oneDayRentalKilometer = data.price.find(
-        (p) => p.rentalTime === 24
+        (p) => p.rentalTime === 24,
       )?.kilometerPerHour!;
       data.price = data.price.filter((p) => p.rentalTime !== 24);
     }
@@ -286,7 +286,7 @@ const updateCarByOwner = async (
   try {
     if (existingCar.otherImages && data.otherImages) {
       existingCar.otherImages.map(
-        async (image: string) => await deleteFileFromS3(image)
+        async (image: string) => await deleteFileFromS3(image),
       );
     }
     if (existingCar.mainImage && data.mainImage) {
@@ -381,13 +381,11 @@ const getAllCars = async (query: Record<string, any>) => {
     // Determine whether we should sort ascending or descending
     const sortOrder = query.sort.startsWith("-") ? -1 : 1;
 
-    console.log("Sorting order:", sortOrder); // Debugging line to check sort order
 
     // Log prices before sorting
     cars.forEach((car: any, index: number) => {
       const priceA =
         car.price.find((p: any) => p.rentalTime === 24)?.price || 0;
-      console.log(`Car ${index + 1} price for rentalTime=24:`, priceA);
     });
 
     cars.sort((a: any, b: any) => {
@@ -412,7 +410,7 @@ function calculateDistance(
   lat1: number,
   lon1: number,
   lat2: number,
-  lon2: number
+  lon2: number,
 ): number {
   const R = 6371; // Earth radius in km
   const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -549,7 +547,7 @@ const getAllCategoryWhichHaveCar = async () => {
 
 const updateCarAcceptanceStatus = async (
   id: string,
-  status: AcceptanceStatus
+  status: AcceptanceStatus,
 ) => {
   const result = await prisma.car.update({
     where: {
@@ -642,7 +640,7 @@ const getAllRejectedCars = async (query: Record<string, any>) => {
 
 const suspendOrActiveCar = async (
   id: string,
-  status: CarStatus
+  status: CarStatus,
   // ownerId: string
 ) => {
   const result = await prisma.car.update({
@@ -1083,6 +1081,7 @@ export const getInHomepageCars = async () => {
               lastName: true,
               phoneNumber: true,
               email: true,
+              subscriptionType: true,
             },
           },
         },
@@ -1199,7 +1198,7 @@ const getCarPromotionwithCheckoutId = async (checkoutId: string) => {
 
 const getAllCarByownerWithAuth = async (
   id: string,
-  query: Record<string, any>
+  query: Record<string, any>,
 ) => {
   const queryBuilder = new QueryBuilder(prisma.car, query);
   const cars = await queryBuilder
@@ -1227,7 +1226,7 @@ const removeOtherImage = async (
   carId: string,
   imageUrl: string,
   userRole: UserRole,
-  userId = null
+  userId = null,
 ) => {
   const car = await prisma.car.findUnique({
     where: {
@@ -1237,7 +1236,7 @@ const removeOtherImage = async (
   if (!car) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      "Car not found to remove other image"
+      "Car not found to remove other image",
     );
   }
   if (userRole == UserRole.USER) {
@@ -1247,13 +1246,13 @@ const removeOtherImage = async (
     if (car.ownerId !== userId) {
       throw new ApiError(
         httpStatus.FORBIDDEN,
-        "You are not the owner of this car"
+        "You are not the owner of this car",
       );
     }
     console.log("passed");
   }
   const newOtherImages = car.otherImages.filter(
-    (image: string) => image !== imageUrl
+    (image: string) => image !== imageUrl,
   );
   await prisma.car.update({
     where: { id: car.id },

@@ -772,7 +772,6 @@ const createCarBookingMessage = async (req: Request) => {
   data.carOwnerId = findCar.ownerId;
   data.userId = user.id;
 
-  console.log(data);
 
   const result = await prisma.carBookingMessage.create({
     data: {
@@ -838,7 +837,6 @@ const getSingleCarBookingMessage = async (id: string, userId: string) => {
       carOwner: { select: userSelectFields },
     },
   });
-  console.log(result);
   return result;
 };
 

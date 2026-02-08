@@ -14,7 +14,7 @@ router.post(
   "/create",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   fileUploader.upload.fields([
-    { name: "otherImages", maxCount: 6 },
+    { name: "otherImages", maxCount: 12 },
     { name: "video", maxCount: 1 },
     { name: "mainImage", maxCount: 1 },
     { name: "authenticationFile", maxCount: 1 },
@@ -28,7 +28,7 @@ router.post(
   "/create-by-user",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.USER),
   fileUploader.upload.fields([
-    { name: "otherImages", maxCount: 6 },
+    { name: "otherImages", maxCount: 12 },
     { name: "video", maxCount: 1 },
     { name: "mainImage", maxCount: 1 },
     { name: "authenticationFile", maxCount: 1 },
@@ -48,7 +48,7 @@ router.patch(
   "/update/:id",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   fileUploader.upload.fields([
-    { name: "otherImages", maxCount: 6 },
+    { name: "otherImages", maxCount: 12 },
     { name: "video", maxCount: 1 },
     { name: "mainImage", maxCount: 1 },
      { name: "authenticationFile", maxCount: 1 }
@@ -61,7 +61,7 @@ router.patch(
   "/update-by-owner/:id",
   auth(),
   fileUploader.upload.fields([
-    { name: "otherImages", maxCount: 6 },
+    { name: "otherImages", maxCount: 12 },
     { name: "video", maxCount: 1 },
     { name: "mainImage", maxCount: 1 },
      { name: "authenticationFile", maxCount: 1 }

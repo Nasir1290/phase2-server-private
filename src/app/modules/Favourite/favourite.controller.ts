@@ -40,13 +40,14 @@ const favouriteController = {
   getAllFavouriteCars: catchAsync(async (req: Request, res: Response) => {
     const user = req.user;
 
-    const result = await FavouriteServices.getAllFavouriteCars(user.id);
+    const result = await FavouriteServices.getAllFavouriteCars(user.id,req.query);
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Favourite cars retrieved successfully",
-      data: result,
+      data: result.data,
+      meta:result.meta
     });
   }),
   getAllFavouriteCarIds: catchAsync(async (req: Request, res: Response) => {
