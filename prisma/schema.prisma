@@ -168,7 +168,7 @@ model CarBookingMessage {
   checkOutTime   String
   totalKilometer String
   firstName      String
-  lastName       String
+  lastName       String?
   dateOfBirth    String
   carId          String   @db.ObjectId
   car            Car      @relation(fields: [carId], references: [id])
