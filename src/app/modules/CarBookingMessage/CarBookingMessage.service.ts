@@ -790,6 +790,7 @@ const createCarBookingMessage = async (req: Request) => {
       lastName: data.lastName,
       totalKilometer: data.totalKilometer,
       dateOfBirth: data.dateOfBirth,
+      totalPrice: data.totalPrice,
     },
     include: {
       car: true,

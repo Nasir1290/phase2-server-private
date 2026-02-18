@@ -180,6 +180,7 @@ model CarBookingMessage {
   phoneNumber    String
   message        String?
   specialRequest String?
+  totalPrice     Float    @default(0)
   createdAt      DateTime @default(now()) @map("createdAt") @db.Timestamp
   updatedAt      DateTime @updatedAt @map("updatedAt") @db.Timestamp
 }

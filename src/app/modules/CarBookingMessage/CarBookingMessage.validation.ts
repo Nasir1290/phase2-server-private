@@ -12,6 +12,7 @@ export const createCarBookingMessageSchema = z.object({
     dateOfBirth: z.string().nonempty("Date of Birth is required"),
     carId: z.string().nonempty("Car ID is required"),
     email: z.string().email("Invalid email address"),
+    totalPrice: z.number().optional(),
     phoneNumber: z.string().nonempty("Phone number is required"),
     message: z.string().optional(),
     specialRequest: z.string().optional(),
@@ -33,6 +34,7 @@ const updateCarBookingMessageSchema = z.object({
     totalKilometer: z.string().optional(),
     lastName: z.string().optional(),
     dateOfBirth: z.string().optional(),
+    totalPrice: z.number().optional(),
   }),
 });
 
